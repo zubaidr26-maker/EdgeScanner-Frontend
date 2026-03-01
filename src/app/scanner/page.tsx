@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
     Search, Filter, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
     RotateCcw, Play, TrendingUp, TrendingDown, Activity, BarChart3,
-    ArrowUpDown, X,
+    ArrowUpDown, X, Calendar,
 } from 'lucide-react';
 import { useScannerStore, type DayFilters, type RangeFilter } from '@/store/scannerStore';
 import { formatVolume, formatPrice } from '@/lib/utils';
@@ -60,6 +60,7 @@ interface ColumnDef {
 
 const ALL_COLUMNS: ColumnDef[] = [
     { key: 'ticker', label: 'Ticker', shortLabel: 'Tkr', sortKey: '', format: (v) => v, hideOnMobile: false },
+    { key: 'gapDate', label: 'Date', shortLabel: 'Date', sortKey: 'gapDate', format: (v) => v ? new Date(v + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }) : '—', hideOnMobile: false },
     { key: 'name', label: 'Company', shortLabel: 'Name', sortKey: 'name', format: (v) => v || '—', hideOnMobile: true },
     { key: 'sector', label: 'Sector', shortLabel: 'Sec', sortKey: 'sector', format: (v) => v || '—', hideOnMobile: true },
     { key: 'industry', label: 'Industry', shortLabel: 'Ind', sortKey: 'industry', format: (v) => v || '—', hideOnMobile: true },
@@ -88,7 +89,7 @@ const ALL_COLUMNS: ColumnDef[] = [
 ];
 
 const DEFAULT_COLUMNS = [
-    'ticker', 'gapDay.gap', 'gapDay.volume', 'gapDay.openPrice',
+    'ticker', 'gapDate', 'gapDay.gap', 'gapDay.volume', 'gapDay.openPrice',
     'gapDay.closePrice', 'gapDay.returnPct', 'marketCap', 'sector'
 ];
 
@@ -348,7 +349,7 @@ export default function ScannerPage() {
     const router = useRouter();
     const {
         filters, results, loading, error, page, totalPages, total, sort, sortDir,
-        scan, setPage, setSort, resetFilters,
+        scan, setPage, setSort, resetFilters, setDateFilter, scannedDates,
     } = useScannerStore();
 
     const [filterOpen, setFilterOpen] = useState(false);
@@ -453,6 +454,107 @@ export default function ScannerPage() {
                 </div>
             </div>
 
+            {/* ── Date Filter Section ─────────────────────────────────── */}
+            <div className="mb-5 rounded-xl border border-white/5 bg-[#0d0f15]/80 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                    <Calendar size={14} className="text-blue-400" />
+                    <span className="text-xs font-semibold text-white">Date Range</span>
+                    <span className="text-[10px] text-slate-600">— Select which days to scan</span>
+                </div>
+
+                {/* Date Mode Tabs */}
+                <div className="flex items-center gap-1 mb-3">
+                    {(['preset', 'single', 'range'] as const).map((mode) => (
+                        <button
+                            key={mode}
+                            onClick={() => setDateFilter('dateMode', mode)}
+                            className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all border ${filters.dateMode === mode
+                                ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                : 'bg-[#1a1d29] text-slate-500 border-white/5 hover:border-white/10'
+                                }`}
+                        >
+                            {mode === 'preset' ? '📅 Quick Presets' : mode === 'single' ? '📌 Specific Date' : '📊 Date Range'}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Preset Buttons */}
+                {filters.dateMode === 'preset' && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {[
+                            { value: 'yesterday', label: 'Yesterday', icon: '📆' },
+                            { value: 'lastWeek', label: 'Last Week', icon: '📅' },
+                            { value: 'last2Weeks', label: 'Last 2 Weeks', icon: '📅' },
+                            { value: 'lastMonth', label: 'Last Month', icon: '🗓️' },
+                            { value: 'last3Months', label: 'Last 3 Months', icon: '📊' },
+                        ].map((preset) => (
+                            <button
+                                key={preset.value}
+                                onClick={() => setDateFilter('dateRange', preset.value)}
+                                className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all border ${filters.dateRange === preset.value
+                                    ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                    : 'bg-[#1a1d29] text-slate-400 border-white/5 hover:border-blue-500/20 hover:text-blue-400'
+                                    }`}
+                            >
+                                {preset.icon} {preset.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Single Date Picker */}
+                {filters.dateMode === 'single' && (
+                    <div className="flex items-center gap-3">
+                        <label className="text-[10px] text-slate-500 uppercase tracking-wider">Gap Day Date</label>
+                        <input
+                            type="date"
+                            value={filters.gapDate}
+                            onChange={(e) => setDateFilter('gapDate', e.target.value)}
+                            className="px-3 py-1.5 text-xs bg-[#1a1d29] border border-white/5 rounded-lg text-slate-300
+                                focus:border-blue-500/40 focus:outline-none cursor-pointer"
+                        />
+                    </div>
+                )}
+
+                {/* Date Range Picker */}
+                {filters.dateMode === 'range' && (
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] text-slate-500 uppercase tracking-wider">From</label>
+                            <input
+                                type="date"
+                                value={filters.dateFrom}
+                                onChange={(e) => setDateFilter('dateFrom', e.target.value)}
+                                className="px-3 py-1.5 text-xs bg-[#1a1d29] border border-white/5 rounded-lg text-slate-300
+                                    focus:border-blue-500/40 focus:outline-none cursor-pointer"
+                            />
+                        </div>
+                        <span className="text-slate-600 text-xs">→</span>
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] text-slate-500 uppercase tracking-wider">To</label>
+                            <input
+                                type="date"
+                                value={filters.dateTo}
+                                onChange={(e) => setDateFilter('dateTo', e.target.value)}
+                                className="px-3 py-1.5 text-xs bg-[#1a1d29] border border-white/5 rounded-lg text-slate-300
+                                    focus:border-blue-500/40 focus:outline-none cursor-pointer"
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {scannedDates.length > 0 && (
+                    <div className="mt-2 text-[10px] text-slate-600">
+                        Scanning {scannedDates.length} business day{scannedDates.length !== 1 ? 's' : ''}
+                        {scannedDates.length <= 5 && (
+                            <span className="ml-1 text-slate-500">
+                                ({scannedDates.map(d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })).join(', ')})
+                            </span>
+                        )}
+                    </div>
+                )}
+            </div>
+
             {/* Results Info / Error Banner */}
             {error ? (
                 <div className="mb-4 p-4 rounded-xl bg-red-500/5 border border-red-500/20 flex items-center justify-between gap-3">
@@ -535,7 +637,7 @@ export default function ScannerPage() {
                                         className="border-b border-white/[0.02] hover:bg-white/[0.02] cursor-pointer transition-colors group"
                                     >
                                         {columns.map((col) => {
-                                            const val = col.key === 'ticker' ? row.ticker : getNestedValue(row, col.key);
+                                            const val = col.key === 'ticker' ? row.ticker : col.key === 'gapDate' ? row.gapDate : getNestedValue(row, col.key);
                                             const formatted = col.format(val);
                                             let colorClass = 'text-slate-300';
                                             if (col.key === 'ticker') colorClass = 'text-white font-semibold group-hover:text-blue-400 transition-colors';

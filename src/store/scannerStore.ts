@@ -28,6 +28,12 @@ export interface ScannerFilters {
     pd: DayFilters;
     d2: DayFilters;
     d3: DayFilters;
+    // Date filters
+    dateMode: 'preset' | 'single' | 'range';  // how the user picks dates
+    dateRange: string;          // preset: 'yesterday' | 'lastWeek' | 'lastMonth' | 'last3Months'
+    gapDate: string;            // single date: YYYY-MM-DD
+    dateFrom: string;           // range start
+    dateTo: string;             // range end
 }
 
 export interface ComputedDay {
@@ -50,6 +56,7 @@ export interface ComputedDay {
 
 export interface ScanResult {
     ticker: string;
+    gapDate?: string;  // YYYY-MM-DD of the gap day
     // Fundamental Data
     name?: string;
     sector?: string;
@@ -101,9 +108,11 @@ interface ScannerState {
     limit: number;
     sort: string;
     sortDir: 'asc' | 'desc';
+    scannedDates: string[];  // dates that were scanned
 
     setFilter: (prefix: keyof ScannerFilters, field: keyof DayFilters, value: any) => void;
     setRangeFilter: (prefix: keyof ScannerFilters, field: keyof Omit<DayFilters, 'closeDirection'>, bound: 'min' | 'max', value: string) => void;
+    setDateFilter: <K extends 'dateMode' | 'dateRange' | 'gapDate' | 'dateFrom' | 'dateTo'>(key: K, value: ScannerFilters[K]) => void;
     resetFilters: () => void;
     setPage: (page: number) => void;
     setSort: (sort: string) => void;
@@ -116,6 +125,11 @@ export const useScannerStore = create<ScannerState>((set, get) => ({
         pd: emptyDayFilters(),
         d2: emptyDayFilters(),
         d3: emptyDayFilters(),
+        dateMode: 'preset',
+        dateRange: 'yesterday',
+        gapDate: '',
+        dateFrom: '',
+        dateTo: '',
     },
     results: [],
     loading: false,
@@ -126,24 +140,43 @@ export const useScannerStore = create<ScannerState>((set, get) => ({
     limit: 50,
     sort: 'gd_volume',
     sortDir: 'desc',
+    scannedDates: [],
 
     setFilter: (prefix, field, value) =>
-        set((state) => ({
-            filters: {
-                ...state.filters,
-                [prefix]: { ...state.filters[prefix], [field]: value },
-            },
-        })),
+        set((state) => {
+            const current = state.filters[prefix];
+            if (typeof current === 'object' && current !== null && !Array.isArray(current)) {
+                return {
+                    filters: {
+                        ...state.filters,
+                        [prefix]: { ...(current as DayFilters), [field]: value },
+                    },
+                };
+            }
+            return state;
+        }),
 
     setRangeFilter: (prefix, field, bound, value) =>
+        set((state) => {
+            const current = state.filters[prefix];
+            if (typeof current === 'object' && current !== null && !Array.isArray(current)) {
+                const dayFilters = current as DayFilters;
+                return {
+                    filters: {
+                        ...state.filters,
+                        [prefix]: {
+                            ...dayFilters,
+                            [field]: { ...(dayFilters[field] as RangeFilter), [bound]: value },
+                        },
+                    },
+                };
+            }
+            return state;
+        }),
+
+    setDateFilter: (key, value) =>
         set((state) => ({
-            filters: {
-                ...state.filters,
-                [prefix]: {
-                    ...state.filters[prefix],
-                    [field]: { ...(state.filters[prefix][field] as RangeFilter), [bound]: value },
-                },
-            },
+            filters: { ...state.filters, [key]: value },
         })),
 
     resetFilters: () =>
@@ -153,8 +186,14 @@ export const useScannerStore = create<ScannerState>((set, get) => ({
                 pd: emptyDayFilters(),
                 d2: emptyDayFilters(),
                 d3: emptyDayFilters(),
+                dateMode: 'preset',
+                dateRange: 'yesterday',
+                gapDate: '',
+                dateFrom: '',
+                dateTo: '',
             },
             page: 1,
+            scannedDates: [],
         }),
 
     setPage: (page) => set({ page }),
@@ -178,20 +217,33 @@ export const useScannerStore = create<ScannerState>((set, get) => ({
                 sortDir,
             };
 
-            const prefixes: (keyof ScannerFilters)[] = ['gd', 'pd', 'd2', 'd3'];
             const numericFields: (keyof Omit<DayFilters, 'closeDirection'>)[] = [
                 'gap', 'volume', 'range', 'highSpike', 'lowSpike',
                 'openPrice', 'closePrice', 'returnPct', 'vwap', 'change', 'highGap', 'highFade',
             ];
 
-            for (const prefix of prefixes) {
+            // Add date params
+            const { dateMode, dateRange, gapDate, dateFrom, dateTo } = filters;
+            if (dateMode === 'preset' && dateRange) {
+                params.dateRange = dateRange;
+            } else if (dateMode === 'single' && gapDate) {
+                params.gapDate = gapDate;
+            } else if (dateMode === 'range' && dateFrom && dateTo) {
+                params.dateFrom = dateFrom;
+                params.dateTo = dateTo;
+            }
+
+            const dayPrefixes: ('gd' | 'pd' | 'd2' | 'd3')[] = ['gd', 'pd', 'd2', 'd3'];
+
+            for (const prefix of dayPrefixes) {
+                const dayFilters = filters[prefix] as DayFilters;
                 for (const field of numericFields) {
-                    const rf = filters[prefix][field] as RangeFilter;
+                    const rf = dayFilters[field] as RangeFilter;
                     if (rf.min) params[`${prefix}_${field}Min`] = rf.min;
                     if (rf.max) params[`${prefix}_${field}Max`] = rf.max;
                 }
-                if (filters[prefix].closeDirection) {
-                    params[`${prefix}_closeDirection`] = filters[prefix].closeDirection;
+                if (dayFilters.closeDirection) {
+                    params[`${prefix}_closeDirection`] = dayFilters.closeDirection;
                 }
             }
 
@@ -202,6 +254,7 @@ export const useScannerStore = create<ScannerState>((set, get) => ({
                 results: data.data || [],
                 total: data.meta?.total || 0,
                 totalPages: data.meta?.totalPages || 0,
+                scannedDates: data.meta?.gapDays || [],
                 loading: false,
             });
         } catch (error: any) {
