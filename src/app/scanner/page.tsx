@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useScannerStore, type DayFilters, type RangeFilter } from '@/store/scannerStore';
 import { formatVolume, formatPrice } from '@/lib/utils';
+import AddToWatchlistBtn from '@/components/AddToWatchlistBtn';
 
 // ── Filter config ──────────────────────────────────────────────────
 interface FilterDef {
@@ -606,6 +607,9 @@ export default function ScannerPage() {
                                         </div>
                                     </th>
                                 ))}
+                                <th className="px-2 py-2.5 text-center text-slate-500 font-semibold text-[10px]">
+                                    ⭐
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -617,11 +621,12 @@ export default function ScannerPage() {
                                                 <div className="h-3 bg-white/5 rounded animate-pulse w-12 sm:w-16" />
                                             </td>
                                         ))}
+                                        <td className="px-2 py-2.5"><div className="h-3 w-5 bg-white/5 rounded animate-pulse" /></td>
                                     </tr>
                                 ))
                             ) : results.length === 0 ? (
                                 <tr>
-                                    <td colSpan={columns.length} className="px-6 py-16 text-center">
+                                    <td colSpan={columns.length + 1} className="px-6 py-16 text-center">
                                         <div className="flex flex-col items-center gap-2">
                                             <Search size={24} className="text-slate-600" />
                                             <p className="text-slate-500 text-sm">No results found</p>
@@ -632,7 +637,7 @@ export default function ScannerPage() {
                             ) : (
                                 results.map((row) => (
                                     <tr
-                                        key={row.ticker}
+                                        key={`${row.ticker}-${row.gapDate}`}
                                         onClick={() => router.push(`/stock/${row.ticker}`)}
                                         className="border-b border-white/[0.02] hover:bg-white/[0.02] cursor-pointer transition-colors group"
                                     >
@@ -650,6 +655,9 @@ export default function ScannerPage() {
                                                 </td>
                                             );
                                         })}
+                                        <td className="px-2 py-2.5" onClick={(e) => e.stopPropagation()}>
+                                            <AddToWatchlistBtn ticker={row.ticker} name={row.name} />
+                                        </td>
                                     </tr>
                                 ))
                             )}

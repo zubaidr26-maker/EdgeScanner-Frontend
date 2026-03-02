@@ -8,6 +8,7 @@ import {
 import { stockApi } from '@/lib/api';
 import SearchBar from '@/components/SearchBar';
 import { formatPrice, formatVolume, getChangeColor } from '@/lib/utils';
+import AddToWatchlistBtn from '@/components/AddToWatchlistBtn';
 
 interface StockItem {
     ticker: string;
@@ -134,8 +135,8 @@ export default function DashboardPage() {
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
                         className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${activeTab === tab.key
-                                ? `bg-white/5 ${tab.color} border border-white/5`
-                                : 'text-slate-500 hover:text-slate-300'
+                            ? `bg-white/5 ${tab.color} border border-white/5`
+                            : 'text-slate-500 hover:text-slate-300'
                             }`}
                     >
                         {tab.icon}
@@ -157,6 +158,7 @@ export default function DashboardPage() {
                                 <th className="px-3 sm:px-4 py-3 text-right text-slate-500 font-semibold hidden sm:table-cell">Volume</th>
                                 <th className="px-3 sm:px-4 py-3 text-right text-slate-500 font-semibold hidden md:table-cell">High</th>
                                 <th className="px-3 sm:px-4 py-3 text-right text-slate-500 font-semibold hidden md:table-cell">Low</th>
+                                <th className="px-2 py-3 text-center text-slate-500 font-semibold text-[10px]">⭐</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -168,6 +170,7 @@ export default function DashboardPage() {
                                                 <div className="h-4 bg-white/5 rounded animate-pulse" />
                                             </td>
                                         ))}
+                                        <td className="px-2 py-3"><div className="h-4 w-5 bg-white/5 rounded animate-pulse" /></td>
                                     </tr>
                                 ))
                                 : tabData.map((stock) => (
@@ -184,6 +187,9 @@ export default function DashboardPage() {
                                         <td className="px-3 sm:px-4 py-3 text-right text-slate-400 hidden sm:table-cell">{formatVolume(stock.volume)}</td>
                                         <td className="px-3 sm:px-4 py-3 text-right text-slate-400 hidden md:table-cell">{formatPrice(stock.high)}</td>
                                         <td className="px-3 sm:px-4 py-3 text-right text-slate-400 hidden md:table-cell">{formatPrice(stock.low)}</td>
+                                        <td className="px-2 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                                            <AddToWatchlistBtn ticker={stock.ticker} />
+                                        </td>
                                     </tr>
                                 ))}
                         </tbody>

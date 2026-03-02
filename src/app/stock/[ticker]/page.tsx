@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { stockApi, watchlistApi } from '@/lib/api';
 import { useWatchlistStore } from '@/store/watchlistStore';
 import StockChart from '@/components/StockChart';
+import AddToWatchlistBtn from '@/components/AddToWatchlistBtn';
 import {
     ArrowLeft,
     Star,
@@ -48,10 +49,10 @@ export default function StockDetailPage() {
     const [stockData, setStockData] = useState<StockData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { isInWatchlist, addLocalItem, removeLocalItem, loadLocalItems } = useWatchlistStore();
+    const { fetchLists } = useWatchlistStore();
 
     useEffect(() => {
-        loadLocalItems();
+        fetchLists();
     }, []);
 
     useEffect(() => {
@@ -71,15 +72,7 @@ export default function StockDetailPage() {
         fetchData();
     }, [ticker]);
 
-    const handleWatchlistToggle = async () => {
-        if (isInWatchlist(ticker)) {
-            removeLocalItem(ticker);
-            try { await watchlistApi.removeFromWatchlist(ticker); } catch { }
-        } else {
-            addLocalItem(ticker);
-            try { await watchlistApi.addToWatchlist(ticker, stockData?.name); } catch { }
-        }
-    };
+
 
     if (isLoading) {
         return (
@@ -168,17 +161,12 @@ export default function StockDetailPage() {
                             </span>
                         </div>
                     </div>
-                    <button
-                        onClick={handleWatchlistToggle}
-                        className={cn(
-                            'p-2.5 sm:p-3 rounded-xl border transition-all shrink-0',
-                            isInWatchlist(ticker)
-                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                                : 'border-white/10 text-slate-500 hover:text-amber-400 hover:border-amber-500/30'
-                        )}
-                    >
-                        <Star size={18} fill={isInWatchlist(ticker) ? 'currentColor' : 'none'} />
-                    </button>
+                    <AddToWatchlistBtn
+                        ticker={ticker}
+                        name={stockData?.name}
+                        variant="button"
+                        size="md"
+                    />
                 </div>
             </div>
 

@@ -4,6 +4,7 @@ import React from 'react';
 import { cn, formatPrice, formatPercent, formatVolume, getChangeColor, getChangeBgColor } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import AddToWatchlistBtn from './AddToWatchlistBtn';
 
 interface Stock {
     ticker: string;
@@ -68,6 +69,7 @@ export default function StockTable({ stocks, isLoading = false, showVolume = tru
                         {showVolume && (
                             <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Volume</th>
                         )}
+                        <th className="py-3 px-2 text-center text-slate-500 font-semibold text-[10px]">⭐</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -106,6 +108,9 @@ export default function StockTable({ stocks, isLoading = false, showVolume = tru
                                     {formatVolume(stock.volume)}
                                 </td>
                             )}
+                            <td className="py-3 px-2 text-center" onClick={(e) => e.stopPropagation()}>
+                                <AddToWatchlistBtn ticker={stock.ticker} />
+                            </td>
                         </tr>
                     ))}
                 </tbody>

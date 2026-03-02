@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useIntradayStore, type IntradayMover } from '@/store/intradayStore';
 import { formatPrice, formatVolume, getChangeColor } from '@/lib/utils';
+import AddToWatchlistBtn from '@/components/AddToWatchlistBtn';
 
 // ── Sparkline Mini Chart ──────────────────────────────────────────────
 function Sparkline({ data, direction, width = 120, height = 36 }: {
@@ -563,6 +564,7 @@ export default function IntradayPage() {
                                 </th>
                                 <th className="px-2 sm:px-3 py-2.5 text-center font-semibold text-slate-500">Dir</th>
                                 <th className="px-2 sm:px-3 py-2.5 text-center font-semibold text-slate-500 hidden sm:table-cell">Chart</th>
+                                <th className="px-2 py-2.5 text-center text-slate-500 font-semibold text-[10px]">⭐</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -682,6 +684,11 @@ export default function IntradayPage() {
                                                     data={mover.chartData}
                                                     direction={mover.direction}
                                                 />
+                                            </td>
+
+                                            {/* Save */}
+                                            <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
+                                                <AddToWatchlistBtn ticker={mover.ticker} />
                                             </td>
                                         </tr>
 
