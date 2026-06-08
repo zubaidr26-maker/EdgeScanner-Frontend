@@ -25,6 +25,14 @@ export const stockApi = {
     }) => api.get(`/stocks/history/${ticker}`, { params }),
     searchStocks: (query: string) => api.get(`/stocks/search?q=${query}`),
     getMarketStatus: () => api.get('/stocks/market-status'),
+
+    // New data endpoints
+    getPeers: (ticker: string) => api.get(`/stocks/peers/${ticker}`),
+    getNews: (ticker: string) => api.get(`/stocks/news/${ticker}`),
+    getFinancials: (ticker: string) => api.get(`/stocks/financials/${ticker}`),
+    getEvents: (ticker: string) => api.get(`/stocks/events/${ticker}`),
+    getRealtime: (ticker: string) => api.get(`/stocks/realtime/${ticker}`),
+    getTechnicals: (ticker: string) => api.get(`/stocks/technicals/${ticker}`),
 };
 
 // Scanner API calls
@@ -50,14 +58,16 @@ export const watchlistApi = {
     deleteList: (id: number) => api.delete(`/watchlist/lists/${id}`),
 
     // Items in a list
-    addItem: (listId: number, ticker: string, name?: string) =>
-        api.post(`/watchlist/lists/${listId}/items`, { ticker, name }),
+    addItem: (listId: number, ticker: string, name?: string, notes?: string) =>
+        api.post(`/watchlist/lists/${listId}/items`, { ticker, name, ...(notes !== undefined && { notes }) }),
+    updateItem: (listId: number, ticker: string, data: { notes?: string; name?: string }) =>
+        api.patch(`/watchlist/lists/${listId}/items/${ticker}`, data),
     removeItem: (listId: number, ticker: string) =>
         api.delete(`/watchlist/lists/${listId}/items/${ticker}`),
 
     // Quick add
-    quickAdd: (ticker: string, name?: string, groupId?: number) =>
-        api.post('/watchlist/quick-add', { ticker, name, groupId }),
+    quickAdd: (ticker: string, name?: string, groupId?: number, notes?: string) =>
+        api.post('/watchlist/quick-add', { ticker, name, groupId, ...(notes !== undefined && { notes }) }),
 
     // Check which lists contain this ticker
     getTickerLists: (ticker: string) => api.get(`/watchlist/ticker/${ticker}`),

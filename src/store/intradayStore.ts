@@ -30,6 +30,12 @@ export interface IntradayFilters {
     minChange: number;      // minimum change %
     timespan: 'minute' | 'hour';
     multiplier: number;
+    // Daily Scanner cross-filters
+    dailyVolumeMin: string;
+    dailyChangeMin: string;
+    dailyChangeMax: string;
+    dailyCloseMin: string;
+    dailyCloseMax: string;
 }
 
 interface IntradayMeta {
@@ -88,6 +94,11 @@ const defaultFilters: IntradayFilters = {
     minChange: 2,
     timespan: 'hour',
     multiplier: 1,
+    dailyVolumeMin: '50000',
+    dailyChangeMin: '',
+    dailyChangeMax: '',
+    dailyCloseMin: '1',
+    dailyCloseMax: '',
 };
 
 export const useIntradayStore = create<IntradayState>((set, get) => ({
@@ -147,6 +158,13 @@ export const useIntradayStore = create<IntradayState>((set, get) => ({
                 sort,
                 sortDir,
             };
+
+            // Add Daily Scanner cross-filters
+            if (filters.dailyVolumeMin) params.dailyVolumeMin = filters.dailyVolumeMin;
+            if (filters.dailyChangeMin) params.dailyChangeMin = filters.dailyChangeMin;
+            if (filters.dailyChangeMax) params.dailyChangeMax = filters.dailyChangeMax;
+            if (filters.dailyCloseMin) params.dailyCloseMin = filters.dailyCloseMin;
+            if (filters.dailyCloseMax) params.dailyCloseMax = filters.dailyCloseMax;
 
             const response = await intradayApi.getMovers(params);
             const data = response.data;

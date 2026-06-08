@@ -6,6 +6,7 @@ export interface WatchlistItem {
     id: number;
     ticker: string;
     name?: string;
+    notes?: string;
     groupId: number;
     createdAt: string;
 }
@@ -34,9 +35,10 @@ interface WatchlistStore {
     setActiveList: (id: number | null) => void;
 
     // Item operations
-    addItemToList: (listId: number, ticker: string, name?: string) => Promise<boolean>;
+    addItemToList: (listId: number, ticker: string, name?: string, notes?: string) => Promise<boolean>;
     removeItemFromList: (listId: number, ticker: string) => Promise<void>;
-    quickAdd: (ticker: string, name?: string, groupId?: number) => Promise<boolean>;
+    updateItemNotes: (listId: number, ticker: string, notes: string) => Promise<boolean>;
+    quickAdd: (ticker: string, name?: string, groupId?: number, notes?: string) => Promise<boolean>;
 
     // Helpers
     isInAnyList: (ticker: string) => boolean;
@@ -113,14 +115,39 @@ export const useWatchlistStore = create<WatchlistStore>((set, get) => ({
 
     setActiveList: (id) => set({ activeListId: id }),
 
-    addItemToList: async (listId, ticker, name) => {
+    addItemToList: async (listId, ticker, name, notes) => {
         try {
-            const res = await watchlistApi.addItem(listId, ticker, name);
+            const res = await watchlistApi.addItem(listId, ticker, name, notes);
             const newItem = res.data?.data;
             if (newItem) {
                 set((state) => ({
                     lists: state.lists.map((l) =>
                         l.id === listId ? { ...l, items: [newItem, ...l.items] } : l
+                    ),
+                }));
+                return true;
+            }
+            return false;
+        } catch {
+            return false;
+        }
+    },
+
+    updateItemNotes: async (listId, ticker, notes) => {
+        try {
+            const res = await watchlistApi.updateItem(listId, ticker, { notes });
+            const updated = res.data?.data;
+            if (updated) {
+                set((state) => ({
+                    lists: state.lists.map((l) =>
+                        l.id === listId
+                            ? {
+                                ...l,
+                                items: l.items.map((i) =>
+                                    i.ticker === ticker ? { ...i, notes: updated.notes } : i
+                                ),
+                            }
+                            : l
                     ),
                 }));
                 return true;
@@ -146,9 +173,9 @@ export const useWatchlistStore = create<WatchlistStore>((set, get) => ({
         }
     },
 
-    quickAdd: async (ticker, name, groupId) => {
+    quickAdd: async (ticker, name, groupId, notes) => {
         try {
-            const res = await watchlistApi.quickAdd(ticker, name, groupId);
+            const res = await watchlistApi.quickAdd(ticker, name, groupId, notes);
             if (res.data?.success) {
                 // Refresh lists to get updated data
                 await get().fetchLists();

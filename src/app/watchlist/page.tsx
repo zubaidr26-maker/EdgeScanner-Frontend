@@ -6,7 +6,7 @@ import { stockApi } from '@/lib/api';
 import { useWatchlistStore, type WatchlistGroup } from '@/store/watchlistStore';
 import {
     Star, Trash2, TrendingUp, TrendingDown, ExternalLink, RefreshCcw,
-    Plus, Pencil, X, Check, FolderPlus, Layers, ChevronDown,
+    Plus, Pencil, X, Check, FolderPlus, Layers, ChevronDown, MessageSquare,
 } from 'lucide-react';
 import { formatPrice, formatPercent, getChangeColor, cn } from '@/lib/utils';
 
@@ -19,6 +19,7 @@ const LIST_COLORS = [
 interface WatchlistStock {
     ticker: string;
     name?: string;
+    notes?: string;
     price?: number;
     change?: number;
     changePercent?: number;
@@ -113,7 +114,7 @@ export default function WatchlistPage() {
     const router = useRouter();
     const {
         lists, activeListId, isLoading,
-        fetchLists, setActiveList, deleteList, updateList, removeItemFromList,
+        fetchLists, setActiveList, deleteList, updateList, removeItemFromList, updateItemNotes,
     } = useWatchlistStore();
 
     const [watchlistStocks, setWatchlistStocks] = useState<WatchlistStock[]>([]);
@@ -122,6 +123,8 @@ export default function WatchlistPage() {
     const [editingListId, setEditingListId] = useState<number | null>(null);
     const [editName, setEditName] = useState('');
     const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+    const [editingNoteFor, setEditingNoteFor] = useState<string | null>(null);
+    const [editNoteText, setEditNoteText] = useState('');
 
     useEffect(() => {
         fetchLists();
@@ -135,6 +138,7 @@ export default function WatchlistPage() {
             const stocks: WatchlistStock[] = activeList.items.map((item) => ({
                 ticker: item.ticker,
                 name: item.name || undefined,
+                notes: item.notes || undefined,
             }));
             setWatchlistStocks(stocks);
         } else {
@@ -192,6 +196,23 @@ export default function WatchlistPage() {
     const handleDeleteList = async (id: number) => {
         await deleteList(id);
         setDeleteConfirmId(null);
+    };
+
+    const handleStartNoteEdit = (ticker: string, existingNote?: string) => {
+        setEditingNoteFor(ticker);
+        setEditNoteText(existingNote || '');
+    };
+
+    const handleSaveNote = async (ticker: string) => {
+        if (activeListId) {
+            await updateItemNotes(activeListId, ticker, editNoteText.trim());
+            // Also update local state so the card shows the new note
+            setWatchlistStocks(prev =>
+                prev.map(s => s.ticker === ticker ? { ...s, notes: editNoteText.trim() || undefined } : s)
+            );
+        }
+        setEditingNoteFor(null);
+        setEditNoteText('');
     };
 
     const totalItems = lists.reduce((sum, l) => sum + l.items.length, 0);
@@ -412,7 +433,7 @@ export default function WatchlistPage() {
                             style={{ animationDelay: `${i * 50}ms` }}
                             onClick={() => router.push(`/stock/${stock.ticker}`)}
                         >
-                            <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center text-sm font-bold text-blue-400 border border-blue-500/10">
                                         {stock.ticker.slice(0, 2)}
@@ -427,16 +448,89 @@ export default function WatchlistPage() {
                                     </div>
                                 </div>
 
-                                <button
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleStartNoteEdit(stock.ticker, stock.notes);
+                                        }}
+                                        title="Add catalyst / reason"
+                                        className={`p-2 rounded-lg transition-all ${
+                                            stock.notes
+                                                ? 'text-amber-400 bg-amber-500/10 hover:bg-amber-500/20'
+                                                : 'text-slate-600 hover:text-amber-400 hover:bg-amber-500/10 sm:opacity-0 sm:group-hover:opacity-100'
+                                        }`}
+                                    >
+                                        <MessageSquare size={14} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemove(stock.ticker);
+                                        }}
+                                        className="p-2 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Note / Catalyst Display or Edit */}
+                            {editingNoteFor === stock.ticker ? (
+                                <div
+                                    className="mb-3 bg-[#1a1d29] rounded-lg border border-amber-500/20 p-2.5 animate-in fade-in duration-150"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <div className="flex items-center gap-1.5 mb-1.5">
+                                        <MessageSquare size={10} className="text-amber-400" />
+                                        <span className="text-[10px] text-amber-400 font-medium uppercase tracking-wider">
+                                            Why did it move? / Your thesis
+                                        </span>
+                                    </div>
+                                    <textarea
+                                        autoFocus
+                                        value={editNoteText}
+                                        onChange={(e) => setEditNoteText(e.target.value)}
+                                        placeholder="e.g., Gap up on earnings beat, FDA approval catalyst, strong sector momentum..."
+                                        rows={3}
+                                        className="w-full px-2.5 py-2 text-[11px] bg-[#0d0f15] border border-white/10 rounded-md text-slate-300
+                                            focus:border-amber-500/40 focus:outline-none placeholder:text-slate-600 resize-none leading-relaxed"
+                                    />
+                                    <div className="flex items-center gap-1.5 mt-2">
+                                        <button
+                                            onClick={() => handleSaveNote(stock.ticker)}
+                                            className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-semibold bg-amber-500/20 text-amber-400 rounded-md
+                                                hover:bg-amber-500/30 transition-all border border-amber-500/20"
+                                        >
+                                            <Check size={10} />
+                                            Save Note
+                                        </button>
+                                        <button
+                                            onClick={() => { setEditingNoteFor(null); setEditNoteText(''); }}
+                                            className="px-2 py-1.5 text-[10px] text-slate-500 hover:text-slate-300 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : stock.notes ? (
+                                <div
+                                    className="mb-3 px-3 py-2 rounded-lg bg-amber-500/5 border border-amber-500/10 cursor-pointer
+                                        hover:border-amber-500/20 transition-all"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleRemove(stock.ticker);
+                                        handleStartNoteEdit(stock.ticker, stock.notes);
                                     }}
-                                    className="p-2 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                                    title="Click to edit note"
                                 >
-                                    <Trash2 size={14} />
-                                </button>
-                            </div>
+                                    <div className="flex items-start gap-1.5">
+                                        <MessageSquare size={10} className="text-amber-400 shrink-0 mt-0.5" />
+                                        <p className="text-[11px] text-amber-300/80 leading-relaxed line-clamp-3">
+                                            {stock.notes}
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : null}
 
                             {stock.price !== undefined ? (
                                 <div className="flex items-end justify-between">

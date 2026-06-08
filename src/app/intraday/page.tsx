@@ -460,6 +460,81 @@ export default function IntradayPage() {
                         ))}
                     </div>
 
+                    {/* Daily Scanner Cross-Filters */}
+                    <div className="border-t border-white/5 pt-4 mb-4 space-y-2.5">
+                        <div className="flex items-center gap-2">
+                            <Filter size={12} className="text-amber-400" />
+                            <span className="text-[11px] font-semibold text-white">Daily Scanner Filters (Cross-Filter)</span>
+                            <span className="text-[10px] text-slate-500">— Filter movers by their daily closing, change, and volume stats</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                            {/* Daily Min Volume */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Daily Min Vol</label>
+                                <input
+                                    type="number"
+                                    placeholder="50,000"
+                                    value={filters.dailyVolumeMin}
+                                    onChange={(e) => setFilter('dailyVolumeMin', e.target.value)}
+                                    className="px-3 py-1.5 text-xs bg-[#1a1d29] border border-white/5 rounded-lg text-slate-300 focus:border-amber-500/40 focus:outline-none font-mono"
+                                />
+                            </div>
+
+                            {/* Daily Close Min */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Daily Close Min ($)</label>
+                                <input
+                                    type="number"
+                                    step="0.5"
+                                    placeholder="Min"
+                                    value={filters.dailyCloseMin}
+                                    onChange={(e) => setFilter('dailyCloseMin', e.target.value)}
+                                    className="px-3 py-1.5 text-xs bg-[#1a1d29] border border-white/5 rounded-lg text-slate-300 focus:border-amber-500/40 focus:outline-none font-mono"
+                                />
+                            </div>
+
+                            {/* Daily Close Max */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Daily Close Max ($)</label>
+                                <input
+                                    type="number"
+                                    step="0.5"
+                                    placeholder="Max"
+                                    value={filters.dailyCloseMax}
+                                    onChange={(e) => setFilter('dailyCloseMax', e.target.value)}
+                                    className="px-3 py-1.5 text-xs bg-[#1a1d29] border border-white/5 rounded-lg text-slate-300 focus:border-amber-500/40 focus:outline-none font-mono"
+                                />
+                            </div>
+
+                            {/* Daily Change Min */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Daily Change Min (%)</label>
+                                <input
+                                    type="number"
+                                    step="0.5"
+                                    placeholder="Min"
+                                    value={filters.dailyChangeMin}
+                                    onChange={(e) => setFilter('dailyChangeMin', e.target.value)}
+                                    className="px-3 py-1.5 text-xs bg-[#1a1d29] border border-white/5 rounded-lg text-slate-300 focus:border-amber-500/40 focus:outline-none font-mono"
+                                />
+                            </div>
+
+                            {/* Daily Change Max */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Daily Change Max (%)</label>
+                                <input
+                                    type="number"
+                                    step="0.5"
+                                    placeholder="Max"
+                                    value={filters.dailyChangeMax}
+                                    onChange={(e) => setFilter('dailyChangeMax', e.target.value)}
+                                    className="px-3 py-1.5 text-xs bg-[#1a1d29] border border-white/5 rounded-lg text-slate-300 focus:border-amber-500/40 focus:outline-none font-mono"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Search Button */}
                     <div className="flex items-center justify-between">
                         <p className="text-[10px] text-slate-600">

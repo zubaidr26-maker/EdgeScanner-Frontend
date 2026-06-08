@@ -34,6 +34,13 @@ export interface ScannerFilters {
     gapDate: string;            // single date: YYYY-MM-DD
     dateFrom: string;           // range start
     dateTo: string;             // range end
+    // Intraday cross-filtering filters
+    intraFromHour: string;
+    intraToHour: string;
+    intraFromMinute: string;
+    intraToMinute: string;
+    intraMinChange: string;
+    intraDirection: string;     // '' | 'up' | 'down' | 'both'
 }
 
 export interface ComputedDay {
@@ -112,7 +119,7 @@ interface ScannerState {
 
     setFilter: (prefix: keyof ScannerFilters, field: keyof DayFilters, value: any) => void;
     setRangeFilter: (prefix: keyof ScannerFilters, field: keyof Omit<DayFilters, 'closeDirection'>, bound: 'min' | 'max', value: string) => void;
-    setDateFilter: <K extends 'dateMode' | 'dateRange' | 'gapDate' | 'dateFrom' | 'dateTo'>(key: K, value: ScannerFilters[K]) => void;
+    setDateFilter: <K extends 'dateMode' | 'dateRange' | 'gapDate' | 'dateFrom' | 'dateTo' | 'intraFromHour' | 'intraToHour' | 'intraFromMinute' | 'intraToMinute' | 'intraMinChange' | 'intraDirection'>(key: K, value: ScannerFilters[K]) => void;
     resetFilters: () => void;
     setPage: (page: number) => void;
     setSort: (sort: string) => void;
@@ -130,6 +137,12 @@ export const useScannerStore = create<ScannerState>((set, get) => ({
         gapDate: '',
         dateFrom: '',
         dateTo: '',
+        intraFromHour: '9',
+        intraToHour: '16',
+        intraFromMinute: '30',
+        intraToMinute: '0',
+        intraMinChange: '',
+        intraDirection: '',
     },
     results: [],
     loading: false,
@@ -191,6 +204,12 @@ export const useScannerStore = create<ScannerState>((set, get) => ({
                 gapDate: '',
                 dateFrom: '',
                 dateTo: '',
+                intraFromHour: '9',
+                intraToHour: '16',
+                intraFromMinute: '30',
+                intraToMinute: '0',
+                intraMinChange: '',
+                intraDirection: '',
             },
             page: 1,
             scannedDates: [],
@@ -223,7 +242,11 @@ export const useScannerStore = create<ScannerState>((set, get) => ({
             ];
 
             // Add date params
-            const { dateMode, dateRange, gapDate, dateFrom, dateTo } = filters;
+            const {
+                dateMode, dateRange, gapDate, dateFrom, dateTo,
+                intraFromHour, intraToHour, intraFromMinute, intraToMinute, intraMinChange, intraDirection
+            } = filters;
+
             if (dateMode === 'preset' && dateRange) {
                 params.dateRange = dateRange;
             } else if (dateMode === 'single' && gapDate) {
@@ -231,6 +254,16 @@ export const useScannerStore = create<ScannerState>((set, get) => ({
             } else if (dateMode === 'range' && dateFrom && dateTo) {
                 params.dateFrom = dateFrom;
                 params.dateTo = dateTo;
+            }
+
+            // Add Intraday cross-filtering filters (only include time constraints if filters active)
+            if (intraMinChange) params.intraMinChange = intraMinChange;
+            if (intraDirection) params.intraDirection = intraDirection;
+            if (intraMinChange || intraDirection) {
+                params.intraFromHour = intraFromHour;
+                params.intraToHour = intraToHour;
+                params.intraFromMinute = intraFromMinute;
+                params.intraToMinute = intraToMinute;
             }
 
             const dayPrefixes: ('gd' | 'pd' | 'd2' | 'd3')[] = ['gd', 'pd', 'd2', 'd3'];
