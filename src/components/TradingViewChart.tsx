@@ -37,7 +37,9 @@ function TradingViewChartInner({ ticker, height = 900 }: TradingViewChartProps) 
         script.type = 'text/javascript';
         script.async = true;
         script.innerHTML = JSON.stringify({
-            autosize: true,
+            autosize: false,
+            width: '100%',
+            height: height - 40,
             symbol: ticker,
             interval: 'D',
             timezone: 'exchange',
