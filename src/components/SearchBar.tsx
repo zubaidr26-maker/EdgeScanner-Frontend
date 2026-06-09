@@ -76,7 +76,7 @@ export default function SearchBar() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => query && setIsOpen(true)}
-                    className="w-full pl-10 pr-8 py-2.5 bg-[#1a1d29] border border-white/5 rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all"
+                    className="w-full pl-10 pr-8 py-2.5 bg-input-bg border border-input-border rounded-xl text-sm text-foreground placeholder:text-muted-text focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all"
                 />
                 {query && (
                     <button
@@ -85,7 +85,7 @@ export default function SearchBar() {
                             setResults([]);
                             setIsOpen(false);
                         }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-text hover:text-foreground"
                     >
                         <X size={14} />
                     </button>
@@ -93,9 +93,9 @@ export default function SearchBar() {
             </div>
 
             {isOpen && (
-                <div className="absolute top-full mt-2 w-full bg-[#1a1d29] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                <div className="absolute top-full mt-2 w-full bg-card border border-card-border rounded-xl shadow-2xl overflow-hidden z-50">
                     {isLoading ? (
-                        <div className="p-4 text-center text-sm text-slate-500">
+                        <div className="p-4 text-center text-sm text-muted-text">
                             <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2" />
                             Searching...
                         </div>
@@ -105,14 +105,14 @@ export default function SearchBar() {
                                 <li key={r.ticker}>
                                     <button
                                         onClick={() => handleSelect(r.ticker)}
-                                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-hover-bg transition-colors border-b border-card-border last:border-0"
                                     >
-                                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-xs font-bold text-blue-400 shrink-0">
+                                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-xs font-bold text-blue-500 dark:text-blue-400 shrink-0">
                                             {r.ticker.slice(0, 2)}
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-sm font-semibold text-white truncate">{r.ticker}</p>
-                                            <p className="text-xs text-slate-500 truncate">{r.name}</p>
+                                            <p className="text-sm font-semibold text-foreground truncate">{r.ticker}</p>
+                                            <p className="text-xs text-muted-text truncate">{r.name}</p>
                                         </div>
                                     </button>
                                 </li>

@@ -71,11 +71,11 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                        <BarChart3 size={22} className="text-blue-400" />
+                    <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                        <BarChart3 size={22} className="text-blue-500 dark:text-blue-400" />
                         Dashboard
                     </h1>
-                    <p className="text-slate-500 text-xs sm:text-sm mt-0.5">Market overview and top movers</p>
+                    <p className="text-muted-text text-xs sm:text-sm mt-0.5">Market overview and top movers</p>
                 </div>
                 <div className="w-full sm:w-80">
                     <SearchBar />
@@ -85,17 +85,17 @@ export default function DashboardPage() {
             {/* Market Status + Mini Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 {/* Market Status */}
-                <div className="rounded-xl border border-white/5 bg-[#0d0f15]/80 p-4">
+                <div className="rounded-xl border border-card-border bg-card/80 p-4">
                     <div className="flex items-center gap-2 mb-2">
-                        <Clock size={14} className="text-slate-500" />
-                        <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Market</span>
+                        <Clock size={14} className="text-muted-text" />
+                        <span className="text-[10px] text-muted-text uppercase tracking-wider font-medium">Market</span>
                     </div>
                     {loading ? (
-                        <div className="h-6 bg-white/5 rounded animate-pulse" />
+                        <div className="h-6 bg-muted-text/10 rounded animate-pulse" />
                     ) : (
                         <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${marketStatus?.market === 'open' ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-red-400'}`} />
-                            <span className="text-sm font-semibold text-white capitalize">
+                            <div className={`w-2 h-2 rounded-full ${marketStatus?.market === 'open' ? 'bg-emerald-500 dark:bg-emerald-400 shadow-lg shadow-emerald-500/50 dark:shadow-emerald-400/50' : 'bg-red-500 dark:bg-red-400'}`} />
+                            <span className="text-sm font-semibold text-foreground capitalize">
                                 {marketStatus?.market || 'Closed'}
                             </span>
                         </div>
@@ -107,18 +107,18 @@ export default function DashboardPage() {
                     <div
                         key={card.title}
                         onClick={() => card.data && router.push(`/stock/${card.data.ticker}`)}
-                        className={`rounded-xl border border-white/5 bg-gradient-to-br ${card.color} p-4 cursor-pointer
-              hover:border-white/10 transition-all`}
+                        className={`rounded-xl border border-card-border bg-card/40 bg-gradient-to-br ${card.color} p-4 cursor-pointer
+              hover:border-card-border/80 transition-all`}
                     >
                         <div className="flex items-center gap-2 mb-2">
                             {card.icon}
-                            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">{card.title}</span>
+                            <span className="text-[10px] text-muted-text uppercase tracking-wider font-medium">{card.title}</span>
                         </div>
                         {loading || !card.data ? (
-                            <div className="h-6 bg-white/5 rounded animate-pulse" />
+                            <div className="h-6 bg-muted-text/10 rounded animate-pulse" />
                         ) : (
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold text-white">{card.data.ticker}</span>
+                                <span className="text-sm font-bold text-foreground">{card.data.ticker}</span>
                                 <span className={`text-xs font-semibold ${getChangeColor(card.data.changePercent)}`}>
                                     {card.data.changePercent > 0 ? '+' : ''}{card.data.changePercent.toFixed(2)}%
                                 </span>
@@ -129,14 +129,14 @@ export default function DashboardPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-1 mb-4 p-1 bg-[#0d0f15] rounded-xl w-fit overflow-x-auto">
+            <div className="flex items-center gap-1 mb-4 p-1 bg-card rounded-xl w-fit overflow-x-auto border border-card-border">
                 {tabs.map((tab) => (
                     <button
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${activeTab === tab.key
-                            ? `bg-white/5 ${tab.color} border border-white/5`
-                            : 'text-slate-500 hover:text-slate-300'
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.key
+                            ? `bg-hover-bg ${tab.color} border border-card-border`
+                            : 'text-muted-text hover:text-foreground'
                             }`}
                     >
                         {tab.icon}
@@ -147,46 +147,46 @@ export default function DashboardPage() {
             </div>
 
             {/* Data Table */}
-            <div className="rounded-xl border border-white/5 overflow-hidden bg-[#0d0f15]/80">
+            <div className="rounded-xl border border-card-border overflow-hidden bg-card/80">
                 <div className="overflow-x-auto">
                     <table className="w-full text-xs sm:text-sm">
                         <thead>
-                            <tr className="bg-[#12141e] border-b border-white/5">
-                                <th className="px-3 sm:px-4 py-3 text-left text-slate-500 font-semibold">Ticker</th>
-                                <th className="px-3 sm:px-4 py-3 text-right text-slate-500 font-semibold">Price</th>
-                                <th className="px-3 sm:px-4 py-3 text-right text-slate-500 font-semibold">Change %</th>
-                                <th className="px-3 sm:px-4 py-3 text-right text-slate-500 font-semibold hidden sm:table-cell">Volume</th>
-                                <th className="px-3 sm:px-4 py-3 text-right text-slate-500 font-semibold hidden md:table-cell">High</th>
-                                <th className="px-3 sm:px-4 py-3 text-right text-slate-500 font-semibold hidden md:table-cell">Low</th>
-                                <th className="px-2 py-3 text-center text-slate-500 font-semibold text-[10px]">⭐</th>
+                            <tr className="bg-background/50 border-b border-card-border">
+                                <th className="px-3 sm:px-4 py-3 text-left text-muted-text font-semibold">Ticker</th>
+                                <th className="px-3 sm:px-4 py-3 text-right text-muted-text font-semibold">Price</th>
+                                <th className="px-3 sm:px-4 py-3 text-right text-muted-text font-semibold">Change %</th>
+                                <th className="px-3 sm:px-4 py-3 text-right text-muted-text font-semibold hidden sm:table-cell">Volume</th>
+                                <th className="px-3 sm:px-4 py-3 text-right text-muted-text font-semibold hidden md:table-cell">High</th>
+                                <th className="px-3 sm:px-4 py-3 text-right text-muted-text font-semibold hidden md:table-cell">Low</th>
+                                <th className="px-2 py-3 text-center text-muted-text font-semibold text-[10px]">⭐</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading
                                 ? Array.from({ length: 10 }).map((_, i) => (
-                                    <tr key={i} className="border-b border-white/[0.02]">
+                                    <tr key={i} className="border-b border-card-border/50">
                                         {Array.from({ length: 6 }).map((_, j) => (
                                             <td key={j} className={`px-4 py-3 ${j > 3 ? 'hidden md:table-cell' : j > 2 ? 'hidden sm:table-cell' : ''}`}>
-                                                <div className="h-4 bg-white/5 rounded animate-pulse" />
+                                                <div className="h-4 bg-muted-text/10 rounded animate-pulse" />
                                             </td>
                                         ))}
-                                        <td className="px-2 py-3"><div className="h-4 w-5 bg-white/5 rounded animate-pulse" /></td>
+                                        <td className="px-2 py-3"><div className="h-4 w-5 bg-muted-text/10 rounded animate-pulse" /></td>
                                     </tr>
                                 ))
                                 : tabData.map((stock) => (
                                     <tr
                                         key={stock.ticker}
                                         onClick={() => router.push(`/stock/${stock.ticker}`)}
-                                        className="border-b border-white/[0.02] hover:bg-white/[0.02] cursor-pointer transition-colors"
+                                        className="border-b border-card-border/50 hover:bg-hover-bg cursor-pointer transition-colors"
                                     >
-                                        <td className="px-3 sm:px-4 py-3 font-semibold text-white">{stock.ticker}</td>
-                                        <td className="px-3 sm:px-4 py-3 text-right text-slate-300">{formatPrice(stock.price)}</td>
+                                        <td className="px-3 sm:px-4 py-3 font-semibold text-foreground">{stock.ticker}</td>
+                                        <td className="px-3 sm:px-4 py-3 text-right text-foreground/90">{formatPrice(stock.price)}</td>
                                         <td className={`px-3 sm:px-4 py-3 text-right font-semibold ${getChangeColor(stock.changePercent)}`}>
                                             {stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
                                         </td>
-                                        <td className="px-3 sm:px-4 py-3 text-right text-slate-400 hidden sm:table-cell">{formatVolume(stock.volume)}</td>
-                                        <td className="px-3 sm:px-4 py-3 text-right text-slate-400 hidden md:table-cell">{formatPrice(stock.high)}</td>
-                                        <td className="px-3 sm:px-4 py-3 text-right text-slate-400 hidden md:table-cell">{formatPrice(stock.low)}</td>
+                                        <td className="px-3 sm:px-4 py-3 text-right text-muted-text hidden sm:table-cell">{formatVolume(stock.volume)}</td>
+                                        <td className="px-3 sm:px-4 py-3 text-right text-muted-text hidden md:table-cell">{formatPrice(stock.high)}</td>
+                                        <td className="px-3 sm:px-4 py-3 text-right text-muted-text hidden md:table-cell">{formatPrice(stock.low)}</td>
                                         <td className="px-2 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                                             <AddToWatchlistBtn ticker={stock.ticker} />
                                         </td>

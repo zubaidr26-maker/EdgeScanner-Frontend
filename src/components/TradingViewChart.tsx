@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, memo } from 'react';
+import { useUiStore } from '@/store/uiStore';
 
 interface TradingViewChartProps {
     ticker: string;
@@ -10,6 +11,7 @@ interface TradingViewChartProps {
 function TradingViewChartInner({ ticker, height = 900 }: TradingViewChartProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const scriptRef = useRef<HTMLScriptElement | null>(null);
+    const { theme } = useUiStore();
 
     useEffect(() => {
         if (!containerRef.current || !ticker) return;
@@ -43,11 +45,11 @@ function TradingViewChartInner({ ticker, height = 900 }: TradingViewChartProps) 
             symbol: ticker,
             interval: 'D',
             timezone: 'exchange',
-            theme: 'dark',
+            theme: theme,
             style: '1',
             locale: 'en',
-            backgroundColor: '#12141e',
-            gridColor: 'rgba(255, 255, 255, 0.03)',
+            backgroundColor: theme === 'dark' ? '#12141e' : '#ffffff',
+            gridColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
             hide_top_toolbar: false,
             hide_legend: false,
             allow_symbol_change: true,
@@ -69,14 +71,14 @@ function TradingViewChartInner({ ticker, height = 900 }: TradingViewChartProps) 
         scriptRef.current = script;
         container.appendChild(script);
 
-        // Cleanup on unmount or ticker change
+        // Cleanup on unmount or ticker/theme change
         return () => {
             if (container) {
                 container.innerHTML = '';
             }
             scriptRef.current = null;
         };
-    }, [ticker, height]);
+    }, [ticker, height, theme]);
 
     return (
         <div className="w-full">
