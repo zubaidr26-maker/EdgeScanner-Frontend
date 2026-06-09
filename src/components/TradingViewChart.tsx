@@ -7,7 +7,7 @@ interface TradingViewChartProps {
     height?: number;
 }
 
-function TradingViewChartInner({ ticker, height = 500 }: TradingViewChartProps) {
+function TradingViewChartInner({ ticker, height = 650 }: TradingViewChartProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const scriptRef = useRef<HTMLScriptElement | null>(null);
 

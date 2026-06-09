@@ -294,8 +294,8 @@ export default function StockDetailPage() {
                 <div className="rounded-xl border border-white/5 bg-[#12141e]/20 p-4 sm:p-6 min-h-[400px]">
                     {activeTab === 'chart' && (
                         <div className="space-y-4">
-                            <div className="h-[500px]">
-                                <TradingViewChart ticker={ticker} height={500} />
+                            <div className="h-[650px]">
+                                <TradingViewChart ticker={ticker} height={650} />
                             </div>
                         </div>
                     )}
