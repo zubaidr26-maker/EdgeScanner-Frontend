@@ -48,7 +48,6 @@ const DAY_GROUPS: DayGroupConfig[] = [
 ];
 
 // ── Table columns ──────────────────────────────────────────────────
-// ── Table columns ──────────────────────────────────────────────────
 interface ColumnDef {
     key: string;
     label: string;
@@ -651,7 +650,12 @@ export default function ScannerPage() {
                         </div>
                         <div>
                             <p className="text-xs font-medium text-red-400">{error}</p>
-                            <p className="text-[10px] text-slate-600 mt-0.5">The free API has rate limits — data caches after the first load</p>
+                            {error.toLowerCase().includes('rate limited') && (
+                                <p className="text-[10px] text-slate-600 mt-0.5">The free API has rate limits — data caches after the first load</p>
+                            )}
+                            {error.toLowerCase().includes('timeout') && (
+                                <p className="text-[10px] text-slate-600 mt-0.5">Request took too long. Try a smaller date range or fewer filters.</p>
+                            )}
                         </div>
                     </div>
                     <button
